@@ -1,0 +1,10 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Build (if ever added later)
+dist/
+build/
+
+# Vercel
+.vercel
