@@ -280,7 +280,8 @@ window.onpopstate = function () {
 
 
 
-<script src="{{ url_for('static', filename='js/hero-slider.js') }}"></script>
+<script src="/static/js/hero-slider.js"></script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -312,19 +313,13 @@ document.addEventListener("DOMContentLoaded", function () {
 <section id="booking" class="booking-section">
     <h2 class="booking-title">Book Appointment</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <div class="flash {{ category }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
+    <div id="flash-message"></div>
+
 
 
     <div class="booking-card">
-        <form action="/book" method="post" class="booking-form">
+        <form id="bookingForm" class="booking-form">
+
 
             <div class="form-group">
                 <label>Name</label>
@@ -338,11 +333,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             <div class="form-group">
                 <label>Service</label>
-                <select name="service">
-                    {% for service in services %}
-                    <option>{{ service }}</option>
-                    {% endfor %}
-                </select>
+                <select name="service" id="serviceSelect"></select>
             </div>
 
             <div class="form-group">
@@ -352,11 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             <div class="form-group">
                 <label>Time Slot</label>
-                <select name="time">
-                    {% for slot in time_slots %}
-                    <option>{{ slot }}</option>
-                    {% endfor %}
-                </select>
+                <select name="time" id="timeSelect"></select>
             </div>
 
             <button type="submit" class="booking-btn">
@@ -450,24 +437,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <p class="reviews-subtitle">Real experiences from real clients</p>
 
         <div class="reviews-scroll">
-            {% for review in reviews %}
-            <div class="review-card">
-
-                <div class="review-stars">
-                    {% for i in range(review.rating) %}★{% endfor %}
-                    {% for i in range(5 - review.rating) %}☆{% endfor %}
-                </div>
-
-                <p class="review-text">
-                    “{{ review.message }}”
-                </p>
-
-                <div class="review-author">
-                    — {{ review.name or "Verified Client" }}
-                </div>
-
-            </div>
-            {% endfor %}
+            <div class="reviews-scroll" id="reviewsContainer"></div>
         </div>
 
     </div>
@@ -567,7 +537,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         <div class="pre-footer-logo">
-            <img src="{{ url_for('static', filename='images/LOGOPNG.png') }}" alt="Sushma Salian Logo">
+            <img src="/static/images/LOGOPNG.png" alt="Sushma Salian Logo">
+
         </div>
 
     </div>
@@ -579,7 +550,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <footer class="site-footer">
     <p>
-        © {{ current_year }} Sushma Salian. All Rights Reserved
+        © <span id="currentYear"></span> Sushma Salian. All Rights Reserved
     </p>
 
     <p class="dev-credit">
@@ -610,6 +581,65 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 600); // smooth exit
         });
 
+});
+</script>
+
+
+
+<script>
+const API = "https://sushma-salian-backend.onrender.com";
+
+// Footer year
+document.getElementById("currentYear").textContent =
+  new Date().getFullYear();
+
+// Load services & slots
+fetch(API + "/api/meta")
+.then(res => res.json())
+.then(data => {
+  data.services.forEach(s =>
+    serviceSelect.innerHTML += `<option>${s}</option>`
+  );
+  data.time_slots.forEach(t =>
+    timeSelect.innerHTML += `<option>${t}</option>`
+  );
+});
+
+// Booking
+document.getElementById("bookingForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+
+  fetch(API + "/api/book", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    const box = document.getElementById("flash-message");
+    if (!res.success) {
+      box.innerHTML = `<div class="flash error">${res.message}</div>`;
+    } else {
+      box.innerHTML = `<div class="flash success">Booking confirmed!</div>`;
+      window.open(res.whatsapp_url, "_blank");
+      e.target.reset();
+    }
+  });
+});
+
+// Reviews
+fetch(API + "/api/reviews")
+.then(r => r.json())
+.then(reviews => {
+  reviews.forEach(r => {
+    reviewsContainer.innerHTML += `
+      <div class="review-card">
+        <div class="review-stars">${"★".repeat(r.rating)}</div>
+        <p>“${r.message}”</p>
+        <div class="review-author">— ${r.name || "Verified Client"}</div>
+      </div>`;
+  });
 });
 </script>
 
