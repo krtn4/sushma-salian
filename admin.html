@@ -38,14 +38,13 @@
                 ← Back to Home
             </a>
 
-            <a href="/admin/logout" style="color:#ff4d4d; text-decoration:none;">
+            <a href="#" onclick="logout()" style="color:#ff4d4d; text-decoration:none;">
                 Logout
             </a>
         </div>
 
     </div>
 </section>
-
 
 
 <section class="booking-section review-moderation-section">
@@ -75,95 +74,119 @@
 </section>
 
 
-
 <script>
 const API = "https://sushma-salian-backend.onrender.com";
+const TOKEN = localStorage.getItem("admin_token");
 
-async function loadAdminData() {
-  const res = await fetch(`${API}/api/admin/data`, {
-    credentials: "include"
-  });
-
-  if (!res.ok) {
-    alert("Unauthorized. Please login.");
+// 🔒 Protect page
+if (!TOKEN) {
+    alert("Please login");
     window.location.href = "/admin-login.html";
-    return;
-  }
-
-  const data = await res.json();
-  renderBookings(data.bookings);
-  renderReviews(data.reviews);
 }
 
+// 🔄 Load data
+async function loadAdminData() {
+    const res = await fetch(`${API}/api/admin/data`, {
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
+
+    if (!res.ok) {
+        alert("Unauthorized. Please login again.");
+        logout();
+        return;
+    }
+
+    const data = await res.json();
+    renderBookings(data.bookings);
+    renderReviews(data.reviews);
+}
+
+// 📋 Render bookings
 function renderBookings(bookings) {
-  const tbody = document.getElementById("bookingsTable");
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("bookingsTable");
+    tbody.innerHTML = "";
 
-  bookings.forEach((b, i) => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${i + 1}</td>
-        <td>${b.name}</td>
-        <td>${b.phone}</td>
-        <td>${b.service}</td>
-        <td>${b.date}</td>
-        <td>${b.time}</td>
-        <td>
-          <button onclick="deleteBooking(${b.id})">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
+    bookings.forEach((b, i) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${b.name}</td>
+                <td>${b.phone}</td>
+                <td>${b.service}</td>
+                <td>${b.date}</td>
+                <td>${b.time}</td>
+                <td>
+                    <button onclick="deleteBooking(${b.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
 }
 
+// ⭐ Render reviews
 function renderReviews(reviews) {
-  const tbody = document.getElementById("reviewsTable");
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("reviewsTable");
+    tbody.innerHTML = "";
 
-  reviews.forEach(r => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${r.name || "Anonymous"}</td>
-        <td>${r.rating} ★</td>
-        <td>${r.message}</td>
-        <td>${r.approved ? "Approved" : "Pending"}</td>
-        <td>
-          ${!r.approved ? `<button onclick="approveReview(${r.id})">Approve</button>` : ""}
-          <button onclick="deleteReview(${r.id})">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
+    reviews.forEach(r => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${r.name || "Anonymous"}</td>
+                <td>${r.rating} ★</td>
+                <td>${r.message}</td>
+                <td>${r.approved ? "Approved" : "Pending"}</td>
+                <td>
+                    ${!r.approved ? `<button onclick="approveReview(${r.id})">Approve</button>` : ""}
+                    <button onclick="deleteReview(${r.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
 }
 
+// ❌ Delete booking
 async function deleteBooking(id) {
-  await fetch(`${API}/api/admin/booking/${id}`, {
-    method: "DELETE",
-    credentials: "include"
-  });
-  loadAdminData();
+    await fetch(`${API}/api/admin/booking/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
+    loadAdminData();
 }
 
+// ✅ Approve review
 async function approveReview(id) {
-  await fetch(`${API}/api/admin/review/approve/${id}`, {
-    method: "POST",
-    credentials: "include"
-  });
-  loadAdminData();
+    await fetch(`${API}/api/admin/review/approve/${id}`, {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
+    loadAdminData();
 }
 
+// 🗑 Delete review
 async function deleteReview(id) {
-  await fetch(`${API}/api/admin/review/${id}`, {
-    method: "DELETE",
-    credentials: "include"
-  });
-  loadAdminData();
+    await fetch(`${API}/api/admin/review/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
+    loadAdminData();
+}
+
+// 🚪 Logout
+function logout() {
+    localStorage.removeItem("admin_token");
+    window.location.href = "/admin-login.html";
 }
 
 loadAdminData();
 </script>
-
-
 
 </body>
 </html>
