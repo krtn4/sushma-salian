@@ -618,15 +618,22 @@ document.getElementById("bookingForm").addEventListener("submit", e => {
   })
   .then(r => r.json())
   .then(res => {
-    const box = document.getElementById("flash-message");
-    if (!res.success) {
-      box.innerHTML = `<div class="flash error">${res.message}</div>`;
-    } else {
-      box.innerHTML = `<div class="flash success">Booking confirmed!</div>`;
-      window.open(res.whatsapp_url, "_blank");
-      e.target.reset();
-    }
-  });
+  const box = document.getElementById("flash-message");
+
+  if (!res.success) {
+    box.innerHTML = `<div class="flash error">${res.message}</div>`;
+  } else {
+    box.innerHTML = `<div class="flash success">Booking confirmed!</div>`;
+
+    // Redirect to confirmation page (Vercel compatible)
+    window.location.href =
+      `/booking-confirmed.html?` +
+      `name=${encodeURIComponent(data.name)}` +
+      `&service=${encodeURIComponent(data.service)}` +
+      `&date=${encodeURIComponent(data.date)}` +
+      `&time=${encodeURIComponent(data.time)}`;
+  }
+});
 });
 
 // Reviews

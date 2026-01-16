@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Booking Confirmed</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Static CSS (Vercel compatible) -->
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -18,17 +22,19 @@
         </p>
 
         <div style="line-height:2; font-size:15px;">
-            <p><strong>Name:</strong> {{ name }}</p>
-            <p><strong>Service:</strong> {{ service }}</p>
-            <p><strong>Date:</strong> {{ date }}</p>
-            <p><strong>Time:</strong> {{ time }}</p>
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Service:</strong> <span id="service"></span></p>
+            <p><strong>Date:</strong> <span id="date"></span></p>
+            <p><strong>Time:</strong> <span id="time"></span></p>
         </div>
 
-       <a href="{{ whatsapp_url }}" target="_blank" class="whatsapp-btn">
-         <i class="fab fa-whatsapp"></i>
+        <a id="whatsappBtn"
+           href="#"
+           target="_blank"
+           class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
             Confirm on WhatsApp
-       </a>
-
+        </a>
 
         <div style="text-align:center; margin-top:25px;">
             <a href="/" style="color:#FFD700; text-decoration:none;">
@@ -38,6 +44,49 @@
 
     </div>
 </section>
+
+<script>
+/*
+  We expect booking details to be passed via query params
+  Example:
+  booking-confirmed.html?name=John&service=Bridal&date=2026-01-20&time=10:00%20AM
+*/
+
+const params = new URLSearchParams(window.location.search);
+
+const name = params.get("name");
+const service = params.get("service");
+const date = params.get("date");
+const time = params.get("time");
+
+// Basic safety check
+if (!name || !service || !date || !time) {
+    alert("Missing booking details");
+    window.location.href = "/";
+}
+
+// Fill UI
+document.getElementById("name").textContent = name;
+document.getElementById("service").textContent = service;
+document.getElementById("date").textContent = date;
+document.getElementById("time").textContent = time;
+
+// Build WhatsApp link
+const message = `
+New Makeup Booking !!
+
+Name: ${name}
+Service: ${service}
+Date: ${date}
+Time: ${time}
+`;
+
+const phone = "917090426728";
+const whatsappUrl =
+    `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+
+document.getElementById("whatsappBtn").href = whatsappUrl;
+</script>
 
 </body>
 </html>
