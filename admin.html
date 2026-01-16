@@ -82,26 +82,33 @@ const TOKEN = localStorage.getItem("admin_token");
 if (!TOKEN) {
     alert("Please login");
     window.location.href = "/admin-login.html";
+    return;
 }
+
 
 // 🔄 Load data
 async function loadAdminData() {
-    const res = await fetch(`${API}/api/admin/data`, {
-        headers: {
-            "Authorization": "Bearer " + TOKEN
+    try {
+        const res = await fetch(`${API}/api/admin/data`, {
+            headers: {
+                "Authorization": "Bearer " + TOKEN
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Unauthorized");
         }
-    });
 
-    if (!res.ok) {
-        alert("Unauthorized. Please login again.");
+        const data = await res.json();
+        renderBookings(data.bookings);
+        renderReviews(data.reviews);
+
+    } catch (err) {
+        alert("Session expired. Please login again.");
         logout();
-        return;
     }
-
-    const data = await res.json();
-    renderBookings(data.bookings);
-    renderReviews(data.reviews);
 }
+
 
 // 📋 Render bookings
 function renderBookings(bookings) {
