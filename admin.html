@@ -7,6 +7,12 @@
 </head>
 <body>
 
+<div id="admin-loader" class="section-loader">
+  <div class="loader-ring"></div>
+  <p>Loading admin data…</p>
+</div>
+
+
 <section class="booking-section">
     <h2 class="booking-title">Admin Dashboard</h2>
 
@@ -193,6 +199,29 @@ function logout() {
 }
 
 loadAdminData();
+
+
+const adminLoader = document.getElementById("admin-loader");
+
+async function loadAdminData() {
+  adminLoader.style.display = "flex";
+
+  const res = await fetch(`${API}/api/admin/data`, {
+    headers: { Authorization: "Bearer " + TOKEN }
+  });
+
+  if (!res.ok) {
+    logout();
+    return;
+  }
+
+  const data = await res.json();
+  adminLoader.style.display = "none";
+
+  renderBookings(data.bookings);
+  renderReviews(data.reviews);
+}
+
 </script>
 
 </body>

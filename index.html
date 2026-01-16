@@ -697,6 +697,79 @@ reviewForm.addEventListener("submit", function (e) {
     alert("Network error. Please try again later.");
   });
 });
+
+
+
+const loader = document.getElementById("section-loader");
+loader.style.display = "flex";
+
+fetch(API + "/api/meta")
+  .then(res => res.json())
+  .then(data => {
+    loader.style.display = "none"; // ✅ hide loader
+
+    data.services.forEach(s =>
+      serviceSelect.innerHTML += `<option>${s}</option>`
+    );
+
+    data.time_slots.forEach(t =>
+      timeSelect.innerHTML += `<option>${t}</option>`
+    );
+  })
+  .catch(() => {
+    loader.innerHTML = "<p>Server is taking longer than usual…</p>";
+  });
+
+
+
+  document.getElementById("bookingForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  loader.style.display = "flex";
+
+  fetch(API + "/api/book", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
+  })
+  .then(r => r.json())
+  .then(res => {
+    loader.style.display = "none";
+
+    if (!res.success) {
+      flash.innerHTML = `<div class="flash error">${res.message}</div>`;
+      return;
+    }
+
+    flash.innerHTML = `<div class="flash success">Booking confirmed!</div>`;
+    window.open(res.whatsapp_url, "_blank");
+  });
+});
+
+
+
+const reviewLoader = document.getElementById("section-loader");
+
+document.getElementById("reviewForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  reviewLoader.style.display = "flex";
+
+  fetch(API + "/api/reviews", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(
+      Object.fromEntries(new FormData(e.target))
+    )
+  })
+  .then(res => res.json())
+  .then(() => {
+    reviewLoader.style.display = "none";
+    alert("Review submitted for approval");
+    e.target.reset();
+  });
+});
+
 </script>
 
 
