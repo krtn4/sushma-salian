@@ -45,6 +45,14 @@
 <script>
 const API = "https://sushma-salian-backend.onrender.com";
 
+const TOKEN = localStorage.getItem("admin_token");
+
+// 🚨 HARD BLOCK PAGE
+if (!TOKEN) {
+  alert("Please login as admin");
+  window.location.href = "/admin-login.html";
+}
+
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 

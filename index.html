@@ -460,7 +460,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         <h3 class="review-form-title">Leave a Review</h3>
 
-        <form action="/submit-review" method="post" class="review-form">
+        <form id="reviewForm" class="review-form">
 
             <input type="text" name="name" placeholder="Your Name">
 
@@ -609,31 +609,45 @@ fetch(API + "/api/meta")
 // Booking
 document.getElementById("bookingForm").addEventListener("submit", e => {
   e.preventDefault();
+
   const data = Object.fromEntries(new FormData(e.target));
+  const box = document.getElementById("flash-message");
 
   fetch(API + "/api/book", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   })
-  .then(r => r.json())
-  .then(res => {
-  const box = document.getElementById("flash-message");
+  .then(async r => {
+    const res = await r.json();
 
-  if (!res.success) {
-    box.innerHTML = `<div class="flash error">${res.message}</div>`;
-  } else {
-    box.innerHTML = `<div class="flash success">Booking confirmed!</div>`;
+    if (!r.ok) {
+      // ❌ ERROR — STAY ON PAGE
+      box.innerHTML = `
+        <div class="flash error">
+          ⚠️ ${res.message}
+        </div>
+      `;
+      box.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
 
-    // Redirect to confirmation page (Vercel compatible)
-    window.location.href =
-      `/booking_confirmed.html?` +
-      `name=${encodeURIComponent(data.name)}` +
-      `&service=${encodeURIComponent(data.service)}` +
-      `&date=${encodeURIComponent(data.date)}` +
-      `&time=${encodeURIComponent(data.time)}`;
-  }
-});
+    // ✅ SUCCESS
+    box.innerHTML = `
+      <div class="flash success">
+        ✅ Booking confirmed! Redirecting…
+      </div>
+    `;
+
+    setTimeout(() => {
+      window.location.href =
+        `/booking-confirmed.html?` +
+        `name=${encodeURIComponent(data.name)}` +
+        `&service=${encodeURIComponent(data.service)}` +
+        `&date=${encodeURIComponent(data.date)}` +
+        `&time=${encodeURIComponent(data.time)}`;
+    }, 800);
+  });
 });
 
 // Reviews
@@ -651,6 +665,39 @@ fetch(API + "/api/reviews")
 });
 </script>
 
+
+<script>
+const reviewForm = document.getElementById("reviewForm");
+
+reviewForm.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(reviewForm));
+
+  fetch(API + "/api/reviews", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  })
+  .then(async res => {
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert("Failed to submit review. Please try again.");
+      return;
+    }
+
+    // ✅ Success UX
+    reviewForm.reset();
+    alert("Thank you! Your review will be visible after some time❤️");
+  })
+  .catch(() => {
+    alert("Network error. Please try again later.");
+  });
+});
+</script>
 
 
 </body>
