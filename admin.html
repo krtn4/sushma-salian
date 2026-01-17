@@ -123,7 +123,7 @@ function renderBookings(bookings) {
                 <td>${b.date}</td>
                 <td>${b.time}</td>
                 <td>
-                    <button onclick="deleteBooking(${b.id})">Delete</button>
+                    <button class="delete-btn" onclick="deleteBooking(${b.id})">Delete</button>
                 </td>
             </tr>
         `;
@@ -143,8 +143,8 @@ function renderReviews(reviews) {
                 <td>${r.message}</td>
                 <td>${r.approved ? "Approved" : "Pending"}</td>
                 <td>
-                    ${!r.approved ? `<button onclick="approveReview(${r.id})">Approve</button>` : ""}
-                    <button onclick="deleteReview(${r.id})">Delete</button>
+                    ${!r.approved ? `<button class="approve-btn" onclick="approveReview(${r.id})">Approve</button>` : ""}
+                    <button class="delete-btn" onclick="deleteReview(${r.id})">Delete</button>
                 </td>
             </tr>
         `;
