@@ -45,7 +45,10 @@
 <script>
 const API = "https://sushma-salian-backend.onrender.com";
 
-const TOKEN = localStorage.getItem("admin_token");
+// If already logged in, go directly to admin
+if (sessionStorage.getItem("isAdminLoggedIn") === "true") {
+    window.location.href = "/admin.html";
+}
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -60,7 +63,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         const res = await fetch(`${API}/api/admin/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ username, password })
         });
 
@@ -68,7 +70,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
             throw new Error("Invalid username or password");
         }
 
-        // Success → redirect to dashboard
+        // ✅ LOGIN SUCCESS
+        sessionStorage.setItem("isAdminLoggedIn", "true");
         window.location.href = "/admin.html";
 
     } catch (err) {
