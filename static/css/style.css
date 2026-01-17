@@ -1929,7 +1929,7 @@ nav a {
 }
 
 /* Error style */
-.flash.error {
+.flash error {
   background: linear-gradient(90deg, #4b0000, #7a0000);
   color: #ff4d4d;
   border: 1px solid #ff4d4d;
@@ -1938,7 +1938,7 @@ nav a {
 }
 
 /* Success style (keep for future) */
-.flash.success {
+.flash success {
   background: linear-gradient(90deg, #003300, #005500);
   color: #7CFF7C;
   border: 1px solid #7CFF7C;
