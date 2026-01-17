@@ -93,26 +93,32 @@ if (!TOKEN) {
 
 
 // 🔄 Load data
+const adminLoader = document.getElementById("admin-loader");
+
 async function loadAdminData() {
+  adminLoader.style.display = "flex";
+
   const res = await fetch(`${API}/api/admin/data`, {
     headers: {
-      "Authorization": "Bearer " + TOKEN
+      Authorization: "Bearer " + TOKEN
     }
   });
 
   if (!res.ok) {
     alert("Session expired. Please login again.");
-    localStorage.removeItem("admin_token");
-    window.location.href = "/admin-login.html";
+    logout();
     return;
   }
 
   const data = await res.json();
+  adminLoader.style.display = "none";
+
   renderBookings(data.bookings);
   renderReviews(data.reviews);
 }
 
 loadAdminData();
+
 
 
 
@@ -201,26 +207,6 @@ function logout() {
 loadAdminData();
 
 
-const adminLoader = document.getElementById("admin-loader");
-
-async function loadAdminData() {
-  adminLoader.style.display = "flex";
-
-  const res = await fetch(`${API}/api/admin/data`, {
-    headers: { Authorization: "Bearer " + TOKEN }
-  });
-
-  if (!res.ok) {
-    logout();
-    return;
-  }
-
-  const data = await res.json();
-  adminLoader.style.display = "none";
-
-  renderBookings(data.bookings);
-  renderReviews(data.reviews);
-}
 
 </script>
 
