@@ -604,11 +604,11 @@ function hide(id) {
 }
 
 /* ================= GLOBAL APP LOADER ================= */
-window.addEventListener("load", async () => {
-  try {
-    await fetch(API + "/health", { cache: "no-store" });
-  } catch {}
-  setTimeout(() => hide("app-loader"), 600);
+window.addEventListener("load", () => {
+  setTimeout(() => hide("app-loader"), 400);
+
+  // warm backend silently
+  fetch(API + "/health", { cache: "no-store" }).catch(() => {});
 });
 
 /* ================= FOOTER YEAR ================= */
