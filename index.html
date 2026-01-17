@@ -437,9 +437,24 @@ document.addEventListener("DOMContentLoaded", function () {
         <h2 class="reviews-title">Client Love</h2>
         <p class="reviews-subtitle">Real experiences from real clients</p>
 
-        <div class="reviews-scroll">
-            <div class="reviews-scroll" id="reviewsContainer"></div>
+        <div id="reviews-loader" class="section-loader">
+                <div class="loader-ring"></div>
+            <p>Loading reviews…</p>
         </div>
+
+
+        <div class="reviews-scroll-container">
+
+            <button class="review-arrow left" id="reviewScrollLeft">❮</button>
+
+            <div class="reviews-scroll" id="reviewsContainer">
+                <!-- review cards injected here by JS -->
+            </div>
+
+            <button class="review-arrow right" id="reviewScrollRight">❯</button>
+
+        </div>
+
 
     </div>
 
@@ -771,6 +786,60 @@ document.getElementById("reviewForm").addEventListener("submit", e => {
 });
 
 </script>
+
+
+<!-- Scroll to Top Button -->
+<button id="scrollTopBtn" class="scroll-top-btn">
+    ↑
+</button>
+
+
+
+<script>
+const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+// Show button after scrolling
+window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+        scrollTopBtn.style.display = "block";
+    } else {
+        scrollTopBtn.style.display = "none";
+    }
+});
+
+// Scroll to top on click
+scrollTopBtn.addEventListener("click", () => {
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+});
+</script>
+
+
+
+<script>
+const reviewsContainer = document.getElementById("reviewsContainer");
+const scrollLeftBtn = document.getElementById("reviewScrollLeft");
+const scrollRightBtn = document.getElementById("reviewScrollRight");
+
+const scrollAmount = 360; // one card width approx
+
+scrollLeftBtn.addEventListener("click", () => {
+    reviewsContainer.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth"
+    });
+});
+
+scrollRightBtn.addEventListener("click", () => {
+    reviewsContainer.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth"
+    });
+});
+</script>
+
 
 
 </body>

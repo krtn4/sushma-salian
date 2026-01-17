@@ -143,7 +143,7 @@ function renderReviews(reviews) {
                 <td>${r.message}</td>
                 <td>${r.approved ? "Approved" : "Pending"}</td>
                 <td>
-                    ${!r.approved ? `<button class="approve-btn" onclick="approveReview(${r.id})">Approve</button>` : ""}
+                    ${!r.approved ? `<button class="approve-btn" style="margin-bottom: 5px;" onclick="approveReview(${r.id})">Approve</button>` : ""}
                     <button class="delete-btn" onclick="deleteReview(${r.id})">Delete</button>
                 </td>
             </tr>
