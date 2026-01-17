@@ -8,9 +8,10 @@
 <body>
 
 <div id="admin-loader" class="section-loader">
-    <div class="loader-ring"></div>
-    <p>Loading admin data…</p>
+  <div class="loader-ring"></div>
+  <p>Loading admin data…</p>
 </div>
+
 
 <section class="booking-section">
     <h2 class="booking-title">Admin Dashboard</h2>
@@ -51,10 +52,13 @@
     </div>
 </section>
 
+
 <section class="booking-section review-moderation-section">
     <div class="booking-card admin-review-card">
 
-        <h3 class="admin-section-title">Review Moderation</h3>
+        <h3 class="admin-section-title">
+            Review Moderation
+        </h3>
 
         <div class="table-wrapper">
             <table class="admin-table review-table">
@@ -67,6 +71,7 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody id="reviewsTable"></tbody>
             </table>
         </div>
@@ -74,41 +79,49 @@
     </div>
 </section>
 
+
 <script>
 const API = "https://sushma-salian-backend.onrender.com";
+const TOKEN = localStorage.getItem("admin_token");
 
-// 🔒 Protect admin page
-if (sessionStorage.getItem("isAdminLoggedIn") !== "true") {
-    alert("Please login as admin");
+// 🔒 Protect page
+if (!TOKEN) {
+    alert("Please login");
     window.location.href = "/admin-login.html";
 }
 
-// Loader
+
+// 🔄 Load data
 const adminLoader = document.getElementById("admin-loader");
 
-// Load admin data
 async function loadAdminData() {
-    adminLoader.style.display = "flex";
+  adminLoader.style.display = "flex";
 
-    try {
-        const res = await fetch(`${API}/api/admin/data`);
-        if (!res.ok) throw new Error("Failed to load data");
-
-        const data = await res.json();
-        renderBookings(data.bookings || []);
-        renderReviews(data.reviews || []);
-
-    } catch (err) {
-        alert("Session expired. Please login again.");
-        logout();
-    } finally {
-        adminLoader.style.display = "none";
+  const res = await fetch(`${API}/api/admin/data`, {
+    headers: {
+      Authorization: "Bearer " + TOKEN
     }
+  });
+
+  if (!res.ok) {
+    alert("Session expired. Please login again.");
+    logout();
+    return;
+  }
+
+  const data = await res.json();
+  adminLoader.style.display = "none";
+
+  renderBookings(data.bookings);
+  renderReviews(data.reviews);
 }
 
 loadAdminData();
 
-// Render bookings
+
+
+
+// 📋 Render bookings
 function renderBookings(bookings) {
     const tbody = document.getElementById("bookingsTable");
     tbody.innerHTML = "";
@@ -123,14 +136,14 @@ function renderBookings(bookings) {
                 <td>${b.date}</td>
                 <td>${b.time}</td>
                 <td>
-                    <button onclick="deleteBooking(${b.id})">Delete</button>
+                    <button class="delete-btn" onclick="deleteBooking(${b.id})">Delete</button>
                 </td>
             </tr>
         `;
     });
 }
 
-// Render reviews
+// ⭐ Render reviews
 function renderReviews(reviews) {
     const tbody = document.getElementById("reviewsTable");
     tbody.innerHTML = "";
@@ -143,37 +156,57 @@ function renderReviews(reviews) {
                 <td>${r.message}</td>
                 <td>${r.approved ? "Approved" : "Pending"}</td>
                 <td>
-                    ${!r.approved ? `<button onclick="approveReview(${r.id})">Approve</button>` : ""}
-                    <button onclick="deleteReview(${r.id})">Delete</button>
+                    ${!r.approved ? `<button class="approve-btn" onclick="approveReview(${r.id})">Approve</button>` : ""}
+                    <button class="delete-btn" onclick="deleteReview(${r.id})">Delete</button>
                 </td>
             </tr>
         `;
     });
 }
 
-// Delete booking
+// ❌ Delete booking
 async function deleteBooking(id) {
-    await fetch(`${API}/api/admin/booking/${id}`, { method: "DELETE" });
+    await fetch(`${API}/api/admin/booking/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
     loadAdminData();
 }
 
-// Approve review
+// ✅ Approve review
 async function approveReview(id) {
-    await fetch(`${API}/api/admin/review/approve/${id}`, { method: "POST" });
+    await fetch(`${API}/api/admin/review/approve/${id}`, {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
     loadAdminData();
 }
 
-// Delete review
+// 🗑 Delete review
 async function deleteReview(id) {
-    await fetch(`${API}/api/admin/review/${id}`, { method: "DELETE" });
+    await fetch(`${API}/api/admin/review/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
     loadAdminData();
 }
 
-// Logout
+// 🚪 Logout
 function logout() {
-    sessionStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("admin_token");
     window.location.href = "/admin-login.html";
 }
+
+loadAdminData();
+
+
+
 </script>
 
 </body>
