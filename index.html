@@ -581,27 +581,50 @@ document.addEventListener("DOMContentLoaded", function () {
 </footer>
 
 
+<!-- Scroll to Top Button -->
+<button id="scrollTopBtn" class="scroll-top-btn">
+    ↑
+</button>
+
 
 <script>
 const API = "https://sushma-salian-backend.onrender.com";
 
-// Footer year
+/* ================= LOADER HELPERS ================= */
+function show(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "flex";
+}
+function hide(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "none";
+}
+
+/* ================= GLOBAL APP LOADER ================= */
+window.addEventListener("load", async () => {
+  try {
+    await fetch(API + "/health", { cache: "no-store" });
+  } catch {}
+  setTimeout(() => hide("app-loader"), 600);
+});
+
+/* ================= FOOTER YEAR ================= */
 document.getElementById("currentYear").textContent =
   new Date().getFullYear();
 
-// Load services & slots
+/* ================= SERVICES & SLOTS ================= */
 fetch(API + "/api/meta")
-.then(res => res.json())
-.then(data => {
-  data.services.forEach(s =>
-    serviceSelect.innerHTML += `<option>${s}</option>`
-  );
-  data.time_slots.forEach(t =>
-    timeSelect.innerHTML += `<option>${t}</option>`
-  );
-});
+  .then(r => r.json())
+  .then(d => {
+    d.services.forEach(s =>
+      serviceSelect.innerHTML += `<option>${s}</option>`
+    );
+    d.time_slots.forEach(t =>
+      timeSelect.innerHTML += `<option>${t}</option>`
+    );
+  });
 
-// Booking
+/* ================= BOOKING ================= */
 document.getElementById("bookingForm").addEventListener("submit", e => {
   e.preventDefault();
 
@@ -617,88 +640,54 @@ document.getElementById("bookingForm").addEventListener("submit", e => {
     const res = await r.json();
 
     if (!r.ok) {
-      // ❌ ERROR — STAY ON PAGE
-      box.innerHTML = `
-        <div class="flash error">
-          ⚠️ ${res.message}
-        </div>
-      `;
-      box.scrollIntoView({ behavior: "smooth", block: "center" });
+      box.innerHTML =
+        `<div class="flash error">⚠️ ${res.message}</div>`;
       return;
     }
 
-    // ✅ SUCCESS
-    box.innerHTML = `
-      <div class="flash success">
-        ✅ Booking confirmed! Redirecting…
-      </div>
-    `;
+    box.innerHTML =
+      `<div class="flash success">✅ Booking confirmed! Redirecting…</div>`;
 
     setTimeout(() => {
-      window.location.href =
-        `/booking_confirmed.html?` +
-        `name=${encodeURIComponent(data.name)}` +
-        `&service=${encodeURIComponent(data.service)}` +
-        `&date=${encodeURIComponent(data.date)}` +
-        `&time=${encodeURIComponent(data.time)}`;
+      location.href =
+        `/booking_confirmed.html?name=${encodeURIComponent(data.name)}&service=${encodeURIComponent(data.service)}&date=${encodeURIComponent(data.date)}&time=${encodeURIComponent(data.time)}`;
     }, 800);
   });
 });
 
-// Reviews
-fetch(API + "/api/reviews")
-.then(r => r.json())
-.then(reviews => {
-  reviews.forEach(r => {
-    reviewsContainer.innerHTML += `
-      <div class="review-card">
-        <div class="review-stars">${"★".repeat(r.rating)}</div>
-        <p>“${r.message}”</p>
-        <div class="review-author">— ${r.name || "Verified Client"}</div>
-      </div>`;
-  });
-});
-</script>
+/* ================= LOAD REVIEWS ================= */
+const reviewsContainer = document.getElementById("reviewsContainer");
 
+async function loadReviews() {
+  show("reviews-loader");
 
-<script>
-const reviewForm = document.getElementById("reviewForm");
+  try {
+    const r = await fetch(API + "/api/reviews");
+    const reviews = await r.json();
 
-reviewForm.addEventListener("submit", function (e) {
-  e.preventDefault();
+    reviewsContainer.innerHTML = "";
 
-  const data = Object.fromEntries(new FormData(reviewForm));
+    reviews.forEach(x => {
+      reviewsContainer.innerHTML += `
+        <div class="review-card">
+          <div class="review-stars">${"★".repeat(x.rating)}</div>
+          <p>“${x.message}”</p>
+          <div class="review-author">— ${x.name || "Verified Client"}</div>
+        </div>`;
+    });
+  } catch {
+    reviewsContainer.innerHTML =
+      "<p style='color:#aaa'>Unable to load reviews</p>";
+  } finally {
+    hide("reviews-loader");
+  }
+}
 
-  fetch(API + "/api/reviews", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-  .then(async res => {
-    const result = await res.json();
+loadReviews();
 
-    if (!res.ok) {
-      alert("Failed to submit review. Please try again.");
-      return;
-    }
-
-    // ✅ Success UX
-    reviewForm.reset();
-    alert("Thank you! Your review will be visible after some time❤️");
-  })
-  .catch(() => {
-    alert("Network error. Please try again later.");
-  });
-});
-
-
-
-
+/* ================= REVIEW SUBMIT ================= */
 document.getElementById("reviewForm").addEventListener("submit", e => {
   e.preventDefault();
-
 
   fetch(API + "/api/reviews", {
     method: "POST",
@@ -707,114 +696,32 @@ document.getElementById("reviewForm").addEventListener("submit", e => {
       Object.fromEntries(new FormData(e.target))
     )
   })
-  .then(res => res.json())
   .then(() => {
-    alert("Review submitted for approval");
+    alert("Thank you! Review submitted ❤️");
     e.target.reset();
-  });
+  })
+  .catch(() =>
+    alert("Network error. Try again later.")
+  );
 });
 
-
-
-
-
-async function loadReviews() {
-    showLoader("reviews-loader");
-
-    try {
-        const res = await fetch(API + "/api/reviews");
-        const reviews = await res.json();
-
-        reviewsContainer.innerHTML = "";
-
-        reviews.forEach(r => {
-            reviewsContainer.innerHTML += `
-                <div class="review-card">
-                    <div class="review-stars">${"★".repeat(r.rating)}</div>
-                    <p>“${r.message}”</p>
-                    <div class="review-author">— ${r.name || "Verified Client"}</div>
-                </div>`;
-        });
-
-    } catch {
-        reviewsContainer.innerHTML =
-            "<p style='color:#aaa'>Unable to load reviews</p>";
-    } finally {
-        hideLoader("reviews-loader");
-    }
-}
-
-loadReviews();
-
-
-</script>
-
-
-<!-- Scroll to Top Button -->
-<button id="scrollTopBtn" class="scroll-top-btn">
-    ↑
-</button>
-
-
-
-<script>
-const scrollTopBtn = document.getElementById("scrollTopBtn");
-
-// Show button after scrolling
+/* ================= SCROLL TO TOP ================= */
+const topBtn = document.getElementById("scrollTopBtn");
 window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-        scrollTopBtn.style.display = "block";
-    } else {
-        scrollTopBtn.style.display = "none";
-    }
+  topBtn.style.display = window.scrollY > 300 ? "block" : "none";
 });
+topBtn.onclick = () =>
+  window.scrollTo({ top: 0, behavior: "smooth" });
 
-// Scroll to top on click
-scrollTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-});
+/* ================= REVIEW HORIZONTAL SCROLL ================= */
+const left = document.getElementById("reviewScrollLeft");
+const right = document.getElementById("reviewScrollRight");
+
+left.onclick = () =>
+  reviewsContainer.scrollBy({ left: -360, behavior: "smooth" });
+right.onclick = () =>
+  reviewsContainer.scrollBy({ left: 360, behavior: "smooth" });
 </script>
-
-
-
-<script>
-const reviewsContainer = document.getElementById("reviewsContainer");
-const scrollLeftBtn = document.getElementById("reviewScrollLeft");
-const scrollRightBtn = document.getElementById("reviewScrollRight");
-
-const scrollAmount = 360; // one card width approx
-
-scrollLeftBtn.addEventListener("click", () => {
-    reviewsContainer.scrollBy({
-        left: -scrollAmount,
-        behavior: "smooth"
-    });
-});
-
-scrollRightBtn.addEventListener("click", () => {
-    reviewsContainer.scrollBy({
-        left: scrollAmount,
-        behavior: "smooth"
-    });
-});
-</script>
-
-
-<script>
-function showLoader(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "flex";
-}
-
-function hideLoader(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-}
-</script>
-
 
 
 
